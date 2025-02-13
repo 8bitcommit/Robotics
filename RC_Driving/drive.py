@@ -1,4 +1,4 @@
-mport pigpio
+import pigpio
 import time
 
 # Define the Raspberry Pi GPIO pins for the servos
