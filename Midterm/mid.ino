@@ -76,9 +76,8 @@ void loop() {
   if (buttonState > 0.5){
     Serial.println("Button Pressed");
     scrollMenu();
-    // actuate();  // UNCOMMENT WHEN ACTUATE FUNCTION IS SETUP
   }
-  
+  // actuate();  // UNCOMMENT WHEN ACTUATE FUNCTION IS SETUP
   delay(200);
 
 }
