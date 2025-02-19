@@ -1,7 +1,12 @@
+#include <Servo.h>
+
 #define BUZZER_PIN 8
 #define R 5 // Red LED
 #define G 6 // Green LED
 #define Y 7 // Yellow LED
+int pinServo = A5; // can be any pin number
+int pos = 0;
+Servo myservo; //create Servo object
 
 // Note frequencies
 #define NOTE_G4  392
@@ -33,6 +38,20 @@
 #define S 50    // Sixteenth note
 
 
+void strumUp(){
+  for (pos = 0; pos <= 40; pos += 1) { // goes from 0 degrees to 180 degrees
+      myservo.write(pos);             
+    }
+    delay(80);
+}
+
+void strumDown(){
+  for (pos = 40; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+      myservo.write(pos);              
+    }
+    delay(80);
+}
+
 
 void playSong(int melody[], int durations[], int lights[], int length) {
   for (int i = 0; i < length; i++) {
@@ -43,8 +62,13 @@ void playSong(int melody[], int durations[], int lights[], int length) {
       digitalWrite(lights[i], HIGH);  // turn the LED on (HIGH is the voltage level)
       //delay(durations[i]);                      // wait for note
       
+      strumUp();
+
       tone(BUZZER_PIN, melody[i], durations[i]);
       delay(durations[i] * 1.3); // Small gap between notes
+
+      strumDown();
+
       digitalWrite(lights[i], LOW);   // turn the LED off by making the voltage LOW
      
       noTone(BUZZER_PIN);
@@ -142,6 +166,7 @@ void setup() {
   pinMode(R, OUTPUT);
   pinMode(G, OUTPUT);
   pinMode(Y, OUTPUT);
+  myservo.attach(pinServo);
 
 }
 
@@ -153,3 +178,4 @@ void loop() {
   smallWorld();
   delay(1500);
 }
+
