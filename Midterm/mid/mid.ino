@@ -1,10 +1,10 @@
 #include <LiquidCrystal.h>
 #include <Servo.h>
 
-#define BUZZER_PIN 8
+#define BUZZER_PIN 6
 #define R 5 // Red LED
-#define G 6 // Green LED
-#define Y 7 // Yellow LED
+#define G 4 // Green LED
+#define Y 3 // Yellow LED
 int pinServo = A5; // can be any pin number
 int pos = 0;
 Servo myservo; //create Servo object
@@ -38,7 +38,7 @@ Servo myservo; //create Servo object
 #define E 100   // Eighth note
 #define S 50    // Sixteenth note
 
-int pinButton = 3;
+int pinButton = 13;
 int buttonState = 0;
 int cursor = 0;
 
@@ -54,6 +54,8 @@ void setup() {
   pinMode(R, OUTPUT);
   pinMode(G, OUTPUT);
   pinMode(Y, OUTPUT);
+  //Sensor
+  pinMode(A0,INPUT);
 
   // strum related
   myservo.attach(pinServo);
@@ -74,10 +76,11 @@ void loop() {
   buttonState = digitalRead(pinButton);
 
   if (buttonState > 0.5){
-    Serial.println("Button Pressed");
+    //Serial.println("Button Pressed");
     scrollMenu();
   }
-  // actuate();  // UNCOMMENT WHEN ACTUATE FUNCTION IS SETUP
+  //Serial.println(analogRead(0));
+  actuate();  // UNCOMMENT WHEN ACTUATE FUNCTION IS SETUP
   delay(200);
 
 }
@@ -98,6 +101,7 @@ void scrollMenu(){
 
 void playSong(int melody[], int durations[], int lights[], int length) {
   for (int i = 0; i < length; i++) {
+    strumUp();
     if (melody[i] == 0) {
       
       delay(durations[i]); // Rest
@@ -105,16 +109,17 @@ void playSong(int melody[], int durations[], int lights[], int length) {
       digitalWrite(lights[i], HIGH);  // turn the LED on (HIGH is the voltage level)
       //delay(durations[i]);                      // wait for note
       
-      strumUp();
+      //strumUp();
 
       tone(BUZZER_PIN, melody[i], durations[i]);
       delay(durations[i] * 1.3); // Small gap between notes
 
-      strumDown();
+      //strumDown();
 
       digitalWrite(lights[i], LOW);   // turn the LED off by making the voltage LOW
      
       noTone(BUZZER_PIN);
+      strumDown();
     }
   }
   delay(500);
@@ -221,13 +226,18 @@ void strumDown(){
 void actuate(){ // for now this is not called anywhere, it's just a template for Evan to add his code.
   // IF TRIGGERED
   // DO THIS ... 
-  if (cursor == 0){
-      muppets();
+  if (analogRead(A0) >500 ){
+    if (cursor == 0){
+      smallWorld();
+        
     }
     else if (cursor == 1){
-      overTheRainbow();
+      muppets();
+      
     } 
     else if (cursor == 2){
-      smallWorld();
+      overTheRainbow();
+      
     }
+  }
 }
