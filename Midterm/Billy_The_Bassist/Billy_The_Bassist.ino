@@ -5,8 +5,8 @@
 #define R 5 // Red LED
 #define G 4 // Green LED
 #define Y 3 // Yellow LED
-int pinServo = A5; // can be any pin number
-int pos = 0;
+int pinServo = A5; // set servo control pin 
+int pos = 0; //initial servo position
 Servo myservo; //create Servo object
 
 // Note frequencies
@@ -38,29 +38,34 @@ Servo myservo; //create Servo object
 #define E 100   // Eighth note
 #define S 50    // Sixteenth note
 
+//button and LCD commands.
 int pinButton = 13;
 int buttonState = 0;
 int cursor = 0;
 
 LiquidCrystal lcd( 7, 8, 9, 10, 11, 12);
 
-const char* menu[] = {"Its a small world", "The Muppets - theme song", "Over the rainbow"};
+const char* menu[] = {"Its a Small World", "The Muppets - theme song", "Over the rainbow"};
 const int menuSize = sizeof(menu)/sizeof(menu[0]);
+// Auto-scroll timing
+unsigned long lastScrollTime = 0;
+const int scrollSpeed = 150;  // Adjust scrolling speed (milliseconds)
 
 
 void setup() {
-  // music related
+  // music buzzer
   pinMode(BUZZER_PIN, OUTPUT);
+  //Red Green and Yellow lights
   pinMode(R, OUTPUT);
   pinMode(G, OUTPUT);
   pinMode(Y, OUTPUT);
-  //Sensor
+  // flex Sensor
   pinMode(A0,INPUT);
 
-  // strum related
+  // strum related - atttach servo
   myservo.attach(pinServo);
 
-  // display related
+  // display lcd setup
   pinMode(pinButton, INPUT);
   lcd.begin(16,2);
   lcd.clear();
@@ -72,15 +77,22 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  //get button state
   buttonState = digitalRead(pinButton);
-
+  //scroll menu after button press
   if (buttonState > 0.5){
-    //Serial.println("Button Pressed");
+    
     scrollMenu();
+    delay(200);
   }
-  //Serial.println(analogRead(0));
-  actuate();  // UNCOMMENT WHEN ACTUATE FUNCTION IS SETUP
+  // scroll text left
+  if (millis() - lastScrollTime >= scrollSpeed) {
+    lastScrollTime = millis();
+    lcd.scrollDisplayLeft();  // Shift text left
+  }
+
+  Serial.println(analogRead(0));
+  actuate();  
   delay(200);
 
 }
@@ -90,8 +102,13 @@ void displayMenu(){
   lcd.setCursor(0,0);
   lcd.print("> ");
   lcd.print(menu[cursor]);
-  // lcd.autoscroll();
-  // lcd.scrollDisplayLeft();
+  // If text is longer than 16 chars, enable scroll
+  if (strlen(menu[cursor]) > 16) {
+    delay(100); // Wait before scrolling starts
+    lcd.autoscroll(); // Enable autoscroll
+  } else {
+    lcd.noAutoscroll(); // Disable autoscroll if not needed
+  }
 }
 
 void scrollMenu(){
@@ -99,23 +116,26 @@ void scrollMenu(){
   displayMenu();
 }
 
+
+
 void playSong(int melody[], int durations[], int lights[], int length) {
+  //iterate through song
   for (int i = 0; i < length; i++) {
+    //strum up each note
     strumUp();
+    //rest note - delay
     if (melody[i] == 0) {
       
       delay(durations[i]); // Rest
-    } else {
+    } 
+    // go thru list of notes,duration, and light choice
+    else {
       digitalWrite(lights[i], HIGH);  // turn the LED on (HIGH is the voltage level)
-      //delay(durations[i]);                      // wait for note
       
-      //strumUp();
 
       tone(BUZZER_PIN, melody[i], durations[i]);
       delay(durations[i] * 1.3); // Small gap between notes
-
-      //strumDown();
-
+ 
       digitalWrite(lights[i], LOW);   // turn the LED off by making the voltage LOW
      
       noTone(BUZZER_PIN);
@@ -134,22 +154,23 @@ void playSong(int melody[], int durations[], int lights[], int length) {
 
 }
 
-// Muppets Theme (Double Tempo)
+// Muppets Theme
 void muppets() {
+  //notes
   int melody[] = {
     NOTE_C6, NOTE_C6, NOTE_A5, NOTE_B5, NOTE_A5, NOTE_B5, NOTE_G5, 0,
     NOTE_C6, NOTE_C6, NOTE_A5, NOTE_B5, NOTE_A5, NOTE_G5, NOTE_G5, 0,
     NOTE_E5, NOTE_E5, NOTE_G5, NOTE_F5, NOTE_E5, NOTE_F5, NOTE_C6, NOTE_C5, NOTE_D5, NOTE_E5, 0,
     NOTE_E5, 0, NOTE_E5, 0, NOTE_D5, NOTE_D5, 0, NOTE_C5
   };
-
+  //durations
   int durations[] = {
     H, H, H, H, Q, H, H, Q,
     H, H, H, H, Q, Q, W, Q,
     H, H, H, H, Q, Q, Q, Q, Q, H, Q,
     Q, Q, Q, E,E,E, Q, W
   };
-
+  //light display
   int lights[] = {
     R, G, Y, R, G, Y, R, G,
     Y, R, G, Y, R, G, Y, R,
@@ -209,24 +230,25 @@ void smallWorld() {
   playSong(melody, durations, lights, sizeof(melody) / sizeof(melody[0]));
 }
 
+//servo lift arm
 void strumUp(){
-  for (pos = 0; pos <= 40; pos += 1) { // goes from 0 degrees to 180 degrees
+  for (pos = 0; pos <= 40; pos += 1) { // goes from 0 degrees to 40 degrees
       myservo.write(pos);             
     }
     delay(80);
 }
 
+//servo drop arm
 void strumDown(){
-  for (pos = 40; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+  for (pos = 40; pos >= 0; pos -= 1) { // goes from 40 degrees to 0 degrees
       myservo.write(pos);              
     }
     delay(80);
 }
 
-void actuate(){ // for now this is not called anywhere, it's just a template for Evan to add his code.
-  // IF TRIGGERED
-  // DO THIS ... 
-  if (analogRead(A0) >500 ){
+//using flex sensor
+void actuate(){ 
+  if (analogRead(A0) > 400 ){
     if (cursor == 0){
       smallWorld();
         
