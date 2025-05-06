@@ -73,7 +73,7 @@ Peacekeeper Bot is a low-cost, multisensor robotic turret platform built for aut
 
 ## 🧾 References
 
-This project references work on SLAM, sensor fusion, UAV-UGV coordination, and targeting systems. For full citations, see the [`Final_Report.pdf`](./Peacekeeper%20Bot%20-Final%20Report.pdf).
+This project references work on SLAM, sensor fusion, UAV-UGV coordination, and targeting systems. For full citations, see the [`Final_Report.pdf`](./PeaceKeeper_Bot-Final_Report.pdf).
 
 ---
 
